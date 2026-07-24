@@ -1,0 +1,6 @@
+{
+    "statusLine": {
+        "type": "command",
+        "command": "python3 .claude/scripts/status_line.py"
+    }
+}
