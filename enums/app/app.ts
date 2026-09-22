@@ -22,10 +22,10 @@ export enum Messages {
 
 /** API endpoint paths */
 export enum ApiEndpoints {
-    LOGIN = '/api/users/login',
-    LOGOUT = '/api/users/logout',
-    CURRENT_USER = '/api/users/me',
-    REGISTER = '/api/users/register',
+    LOGIN = '/users/login',
+    LOGOUT = '/users/logout',
+    CURRENT_USER = '/users/me',
+    REGISTER = '/users/register',
 }
 
 /** Storage state file paths */
