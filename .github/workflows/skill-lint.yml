@@ -5,51 +5,51 @@
 name: Skill Lint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "CLAUDE.md"
-      - ".claude/**"
-      - ".cursor/**"
-      - ".github/instructions/**"
-      - ".github/skills/**"
-      - ".github/workflows/skill-lint.yml"
-      - "scripts/check-*.sh"
-      - "VERSION"
-      - "package.json"
-      - "CHANGELOG.md"
-  pull_request:
-    paths:
-      - "CLAUDE.md"
-      - ".claude/**"
-      - ".cursor/**"
-      - ".github/instructions/**"
-      - ".github/skills/**"
-      - ".github/workflows/skill-lint.yml"
-      - "scripts/check-*.sh"
-      - "VERSION"
-      - "package.json"
-      - "CHANGELOG.md"
+    push:
+        branches: [main]
+        paths:
+            - 'CLAUDE.md'
+            - '.claude/**'
+            - '.cursor/**'
+            - '.github/instructions/**'
+            - '.github/skills/**'
+            - '.github/workflows/skill-lint.yml'
+            - 'scripts/check-*.sh'
+            - 'VERSION'
+            - 'package.json'
+            - 'CHANGELOG.md'
+    pull_request:
+        paths:
+            - 'CLAUDE.md'
+            - '.claude/**'
+            - '.cursor/**'
+            - '.github/instructions/**'
+            - '.github/skills/**'
+            - '.github/workflows/skill-lint.yml'
+            - 'scripts/check-*.sh'
+            - 'VERSION'
+            - 'package.json'
+            - 'CHANGELOG.md'
 
 jobs:
-  skill-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    skill-lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Constitution rules -> skill Critical blocks
-        run: bash scripts/check-rules-drift.sh
+            - name: Constitution rules -> skill Critical blocks
+              run: bash scripts/check-rules-drift.sh
 
-      - name: SKILL.md -> references/ pointers, orphans, anchors
-        run: bash scripts/check-skill-references-drift.sh
+            - name: SKILL.md -> references/ pointers, orphans, anchors
+              run: bash scripts/check-skill-references-drift.sh
 
-      - name: Skills Index sync, frontmatter, cross-skill refs
-        run: bash scripts/check-skill-crossrefs.sh
+            - name: Skills Index sync, frontmatter, cross-skill refs
+              run: bash scripts/check-skill-crossrefs.sh
 
-  version-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    version-lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: VERSION <-> package.json <-> CHANGELOG consistency
-        run: bash scripts/check-version-drift.sh
+            - name: VERSION <-> package.json <-> CHANGELOG consistency
+              run: bash scripts/check-version-drift.sh

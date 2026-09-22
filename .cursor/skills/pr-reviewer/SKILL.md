@@ -48,29 +48,29 @@ git diff master...HEAD             # full diff
 ```
 
 - `master...HEAD` (three-dot) diffs against the **merge-base** — the point where the branch forked — so you see exactly and only what the branch authored.
-- `master..HEAD` (two-dot) drags in every commit that landed on `master` *after* the branch forked and presents them as the branch's work. Reviewing those produces **false findings against code the author never wrote** — the single most common way a PR review goes wrong here.
+- `master..HEAD` (two-dot) drags in every commit that landed on `master` _after_ the branch forked and presents them as the branch's work. Reviewing those produces **false findings against code the author never wrote** — the single most common way a PR review goes wrong here.
 
 **Never** use two-dot. If you catch yourself about to flag something, confirm its hunk appears in the three-dot diff before it becomes a finding. Read the whole diff before forming any opinion.
 
 ### Phase 3 — Route to applicable skills
 
-The changed file paths decide which rules apply. This is the heart of doing it *right* — an API branch and a UI branch are judged by different skills. Map every changed path to its skills and **read those skill files** before reviewing. Always also hold the `.cursor/rules/rules.mdc` Constitution.
+The changed file paths decide which rules apply. This is the heart of doing it _right_ — an API branch and a UI branch are judged by different skills. Map every changed path to its skills and **read those skill files** before reviewing. Always also hold the `.cursor/rules/rules.mdc` Constitution.
 
-| Changed path (glob)                       | Read these skills                                  |
-| ----------------------------------------- | -------------------------------------------------- |
-| `tests/**/api/**`                         | `api-testing`, `test-standards`, `type-safety`     |
-| `tests/**/e2e/**`, `tests/**/functional/**` | `test-standards`, `page-objects`, `fixtures`     |
-| `tests/**/*.setup.ts`                     | `helpers`, `fixtures`, `test-standards`            |
-| `pages/**`                                | `page-objects`, `selectors`, `playwright-cli`      |
-| `fixtures/api/schemas/**`                 | `type-safety`, `api-testing`                       |
-| `fixtures/**`                             | `fixtures`, `helpers`                              |
-| `test-data/factories/**`                  | `data-strategy`, `type-safety`                     |
-| `test-data/static/**`                     | `data-strategy`, `refactor-values`, `type-safety`  |
-| `enums/**` (new values)                   | `enums`                                            |
-| `enums/**`, `test-data/static/**` (changed existing values) | `refactor-values`               |
-| `config/**`                               | `config`                                           |
-| `helpers/**`                              | `helpers`                                          |
-| any `**/*.ts`                             | `type-safety`                                      |
+| Changed path (glob)                                         | Read these skills                                 |
+| ----------------------------------------------------------- | ------------------------------------------------- |
+| `tests/**/api/**`                                           | `api-testing`, `test-standards`, `type-safety`    |
+| `tests/**/e2e/**`, `tests/**/functional/**`                 | `test-standards`, `page-objects`, `fixtures`      |
+| `tests/**/*.setup.ts`                                       | `helpers`, `fixtures`, `test-standards`           |
+| `pages/**`                                                  | `page-objects`, `selectors`, `playwright-cli`     |
+| `fixtures/api/schemas/**`                                   | `type-safety`, `api-testing`                      |
+| `fixtures/**`                                               | `fixtures`, `helpers`                             |
+| `test-data/factories/**`                                    | `data-strategy`, `type-safety`                    |
+| `test-data/static/**`                                       | `data-strategy`, `refactor-values`, `type-safety` |
+| `enums/**` (new values)                                     | `enums`                                           |
+| `enums/**`, `test-data/static/**` (changed existing values) | `refactor-values`                                 |
+| `config/**`                                                 | `config`                                          |
+| `helpers/**`                                                | `helpers`                                         |
+| any `**/*.ts`                                               | `type-safety`                                     |
 
 If the diff touches an area not in this table, fall back to the `.cursor/rules/rules.mdc` skills index and pick the closest match. When unsure which skill owns a concern, load `ai-native-workflow` — it is the routing authority.
 
@@ -89,7 +89,7 @@ CHANGED=$(git diff master...HEAD --name-only --diff-filter=d -- '*.ts')
 [ -n "$CHANGED" ] && echo "$CHANGED" | xargs npx prettier --check
 ```
 
-**Typecheck — narrowed to the changed files.** `tsc --noEmit` always type-checks the whole project (it follows imports and honours the project's `tsconfig` — passing single files with `tsc --noEmit foo.ts` *ignores* the tsconfig and gives wrong results, so don't). Run the full check, then filter its output to the changed paths with a fixed-string match against the captured list:
+**Typecheck — narrowed to the changed files.** `tsc --noEmit` always type-checks the whole project (it follows imports and honours the project's `tsconfig` — passing single files with `tsc --noEmit foo.ts` _ignores_ the tsconfig and gives wrong results, so don't). Run the full check, then filter its output to the changed paths with a fixed-string match against the captured list:
 
 ```bash
 npx tsc --noEmit 2>&1 | grep -F -f <(echo "$CHANGED") \
@@ -113,7 +113,7 @@ npx playwright test <changed spec path> --project <project-name>
 
 > The naming scheme is **repo-specific** (often `<area>-<browser>`, e.g. `front-chromium`, but not guaranteed). Derive `<area>` from the spec path `tests/<area>/...`, then pick the config project whose name contains that area. A bare area word or the spec path alone usually won't select a project. Setup projects (commonly `<area>-setup`) run automatically as dependencies. If no project matches, run without `--project` and note it in the report.
 
-**Missing env ≠ branch defect.** API / wallet / back specs read runtime tokens (`USER_ACCESS_TOKEN_WALLET`, `PUBLIC_GATEWAY_URL`, etc.) that a `*.setup.ts` mints from real credentials. With no env file those vars are undefined and the run dies at auth/setup. That is an **environment limitation, not a branch defect** — report it verbatim as *"could not run — missing env tokens (`<var>`); run manually before merge"* and move on. **Never** invent, hardcode, or stub a token to force a green run.
+**Missing env ≠ branch defect.** API / wallet / back specs read runtime tokens (`USER_ACCESS_TOKEN_WALLET`, `PUBLIC_GATEWAY_URL`, etc.) that a `*.setup.ts` mints from real credentials. With no env file those vars are undefined and the run dies at auth/setup. That is an **environment limitation, not a branch defect** — report it verbatim as _"could not run — missing env tokens (`<var>`); run manually before merge"_ and move on. **Never** invent, hardcode, or stub a token to force a green run.
 
 ### Phase 5 — Review against the rules
 
@@ -144,6 +144,7 @@ The script greps the changed files for the deterministically-detectable violatio
 Then read **`references/constitution-checklist.md`** and walk the remaining items against the three-dot diff — the ones a grep can't judge: coverage gaps, sibling divergence, schema-vs-contract fidelity, cleanup hooks, return-type completeness, feedback-message selectors. Record ✅ / ❌ / ➖ with `file:line` evidence for every applicable item. The routed skills from Phase 3 layer area-specific depth on top — the checklist is the non-negotiable baseline.
 
 Rules:
+
 - Mark ➖ **only** when the branch genuinely doesn't touch that area — never as a shortcut for "looks fine."
 - Every ❌ becomes a finding in the report at the tier the checklist assigns.
 - If an item can't be evaluated (e.g. tests unrunnable for missing env), record that explicitly — do not mark it ✅.
@@ -164,18 +165,19 @@ gh pr view <branch> --json number,url -q '.number'
   `gh pr review <number> --comment --body-file <report.md>`
 - **Inline findings** — anchor each 🔴/🟠 finding to its `file:line` as a review comment. Keep one comment per finding, one line each: location · problem · fix. Post them in a single review via the GitHub API (`commit_id` must be the branch's current HEAD SHA):
 
-  ```bash
-  HEAD_SHA=$(git rev-parse HEAD)
-  gh api -X POST "repos/{owner}/{repo}/pulls/<number>/reviews" \
-    -f commit_id="$HEAD_SHA" \
-    -f event="COMMENT" \
-    -f body="<short summary>" \
-    -F 'comments[][path]=path/to/file.ts' \
-    -F 'comments[][line]=42' \
-    -F 'comments[][body]=🔴 problem · fix'
-  ```
+    ```bash
+    HEAD_SHA=$(git rev-parse HEAD)
+    gh api -X POST "repos/{owner}/{repo}/pulls/<number>/reviews" \
+      -f commit_id="$HEAD_SHA" \
+      -f event="COMMENT" \
+      -f body="<short summary>" \
+      -F 'comments[][path]=path/to/file.ts' \
+      -F 'comments[][line]=42' \
+      -F 'comments[][body]=🔴 problem · fix'
+    ```
 
-  Repeat the `comments[][...]` triple per finding. `line` is the line in the file's new version; use `side=RIGHT` (default) for added/changed lines.
+    Repeat the `comments[][...]` triple per finding. `line` is the line in the file's new version; use `side=RIGHT` (default) for added/changed lines.
+
 - Never `--approve` or `--request-changes` on the user's behalf — use `--comment` only; the human owns the verdict.
 - If no PR exists for the branch, say so and ask whether to open one (`gh pr create`) — don't open it unprompted.
 
@@ -183,7 +185,7 @@ gh pr view <branch> --json number,url -q '.number'
 
 ### Phase 8 — OPTIONAL: offer to implement fixes
 
-After the report, offer: *"Want me to implement any of these findings?"* The user picks which (all, must-fix only, a specific subset). Only then do you edit files. Apply fixes the way the routed skills prescribe; match sibling patterns; keep changes minimal and on-scope. Re-run Phase 4 verification on what you changed.
+After the report, offer: _"Want me to implement any of these findings?"_ The user picks which (all, must-fix only, a specific subset). Only then do you edit files. Apply fixes the way the routed skills prescribe; match sibling patterns; keep changes minimal and on-scope. Re-run Phase 4 verification on what you changed.
 
 ### Phase 9 — OPTIONAL: ask to commit
 
@@ -208,7 +210,7 @@ Be honest about what you couldn't verify — a capped score with a clear reason 
 - **Read-only until Phase 7 is approved.** The review never edits files. If the user only asked to "review", they get a report and nothing else.
 - **Three-dot diff always.** Reviewing master's own commits is the most common false-finding source.
 - **Every finding needs a hook** — a rule, a bug, or a missing case. No rule-less style opinions.
-- **Runtime ≠ contract (hard line).** API behaviour that disagrees with the documented spec is a bug to *report* via `test.skip` + `// FIXME: <ticket>`, **never** a schema to *relax*. Any schema-loosening introduced to swallow a runtime surprise is itself a 🔴 Must-fix finding — see the Contract-fidelity bullet in Phase 5.
+- **Runtime ≠ contract (hard line).** API behaviour that disagrees with the documented spec is a bug to _report_ via `test.skip` + `// FIXME: <ticket>`, **never** a schema to _relax_. Any schema-loosening introduced to swallow a runtime surprise is itself a 🔴 Must-fix finding — see the Contract-fidelity bullet in Phase 5.
 - **Env failures aren't branch failures.** Distinguish "the branch is wrong" from "I lack the tokens/URL to run it".
 - **Don't trust the diff's own claims.** If a comment or test name says one thing and the code does another, that gap is itself a finding.
 

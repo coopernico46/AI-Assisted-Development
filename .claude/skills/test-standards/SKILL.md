@@ -73,13 +73,13 @@ test.describe('Feature Name', () => {
 
 Each test gets **exactly one** tag. Pick the right one:
 
-| Tag            | Used for                                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| `@smoke`       | Critical path functional tests, run first and frequently                                         |
-| `@sanity`      | Key functionality verification                                                                   |
-| `@regression`  | Full regression coverage of a single behaviour                                                   |
-| `@e2e`         | End-to-end multi-feature user journey tests                                                      |
-| `@api`         | API contract and schema validation tests                                                         |
+| Tag            | Used for                                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@smoke`       | Critical path functional tests, run first and frequently                                                                                                                  |
+| `@sanity`      | Key functionality verification                                                                                                                                            |
+| `@regression`  | Full regression coverage of a single behaviour                                                                                                                            |
+| `@e2e`         | End-to-end multi-feature user journey tests                                                                                                                               |
+| `@api`         | API contract and schema validation tests                                                                                                                                  |
 | `@destructive` | Mutates **shared/global** state (locale, permissions, roles, guest access, feature flags, global settings) — excluded from `npm test`, run via `npm run test:destructive` |
 
 **`@destructive` overrides any other importance tag — for shared/global state mutation only.** If a test would otherwise be `@smoke` but changes global settings, it is tagged **only** `@destructive`. A test that creates and cleans up **only its own data** is isolated, not destructive — keep its importance tag (`@smoke`/`@regression`/`@api`/…).
@@ -193,7 +193,7 @@ For API-driven setup/teardown reused across many files, see the `api-testing` sk
 - toggling **feature flags** or global settings / configuration
 - mutating **shared seed data** every test reads (e.g. "delete all users", resetting a global catalog)
 
-**Counter-example — NOT destructive.** A test that creates its **own** record, asserts on it, then deletes **only that record** in cleanup is *isolated*, not destructive. It touches no state another test depends on. Tag it by importance (`@smoke` / `@regression` / `@api` / …) — never `@destructive`. It still needs a cleanup hook (see below), but it runs in the parallel suite.
+**Counter-example — NOT destructive.** A test that creates its **own** record, asserts on it, then deletes **only that record** in cleanup is _isolated_, not destructive. It touches no state another test depends on. Tag it by importance (`@smoke` / `@regression` / `@api` / …) — never `@destructive`. It still needs a cleanup hook (see below), but it runs in the parallel suite.
 
 **Cleanup hook is required for any state-mutating test.** Both `@destructive` shared-state tests and isolated own-data tests **MUST** use `test.afterEach()` or `test.afterAll()` to revert what they wrote:
 

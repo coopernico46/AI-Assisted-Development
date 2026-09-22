@@ -299,24 +299,24 @@ Phase 4's proposal **must** carry a 1-10 confidence. The number tells you what t
 
 The rules most often skipped under time pressure — and the one that catches each. These are hard stops (`CLAUDE.md` Constitution).
 
-| Drift you might make                                                      | The rule that prevents it                                                                |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Guessing a selector / UI text / folder / enum value                       | **Explore first** (`playwright-cli` for UI, OpenAPI for API) or **ASK**. Never invent.   |
-| Emitting a plan you're not sure of                                        | Confidence **< 5 → don't emit; ASK** for the missing input.                              |
-| `curl` the API then write a schema that matches reality                   | Schemas come from the **documented contract**; runtime mismatch is a **bug**, not a fix. |
-| Loosening a schema to make a test pass                                    | `test.skip` + `// FIXME: <ticket-url>`. Never weaken the contract.                       |
-| `z.object()` for an API schema                                            | Always **`z.strictObject()`** — catches unexpected fields.                               |
-| Skipping `expect(Schema.parse(body)).toBeTruthy()`                        | Mandatory for every API response — type generics alone are insufficient.                 |
-| Empty-body-only 400 test                                                  | Per-field omission **and** per-field invalid-type loops are required.                    |
-| Two tags / `@functional` / tag on `describe`                              | **Exactly one** tag per test; `@destructive` wins — shared/global state only.            |
+| Drift you might make                                                      | The rule that prevents it                                                                                                   |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Guessing a selector / UI text / folder / enum value                       | **Explore first** (`playwright-cli` for UI, OpenAPI for API) or **ASK**. Never invent.                                      |
+| Emitting a plan you're not sure of                                        | Confidence **< 5 → don't emit; ASK** for the missing input.                                                                 |
+| `curl` the API then write a schema that matches reality                   | Schemas come from the **documented contract**; runtime mismatch is a **bug**, not a fix.                                    |
+| Loosening a schema to make a test pass                                    | `test.skip` + `// FIXME: <ticket-url>`. Never weaken the contract.                                                          |
+| `z.object()` for an API schema                                            | Always **`z.strictObject()`** — catches unexpected fields.                                                                  |
+| Skipping `expect(Schema.parse(body)).toBeTruthy()`                        | Mandatory for every API response — type generics alone are insufficient.                                                    |
+| Empty-body-only 400 test                                                  | Per-field omission **and** per-field invalid-type loops are required.                                                       |
+| Two tags / `@functional` / tag on `describe`                              | **Exactly one** tag per test; `@destructive` wins — shared/global state only.                                               |
 | `@destructive` for isolated own-data test                                 | Reserve `@destructive` for shared/global state (locale, permissions, roles, flags); isolated CRUD keeps its importance tag. |
-| Any state-mutating test with no cleanup                                   | Required `afterEach`/`afterAll` that reverts state — destructive **and** isolated.       |
-| `page.waitForTimeout(...)` / XPath / `any`                                | Web-first assertions only; semantic locators only; typed only.                           |
-| `new PageObject(page)` in a test                                          | Consume via the fixture (`async ({ appPage }) => …`).                                    |
-| Hardcoded URL / token / endpoint                                          | `process.env.*` for URLs & credentials; `enums/{area}/*` for paths & messages.           |
-| `.json` static data                                                       | Static data is **`.ts` with `as const`** only.                                           |
-| Marking a task done with failing tests                                    | Run the affected tests; green before "done"; red → `debugging`.                          |
-| Suppressing a failure (try/catch on `expect`, raise timeout, silent skip) | Fix the **root cause**; `debugging` flow.                                                |
+| Any state-mutating test with no cleanup                                   | Required `afterEach`/`afterAll` that reverts state — destructive **and** isolated.                                          |
+| `page.waitForTimeout(...)` / XPath / `any`                                | Web-first assertions only; semantic locators only; typed only.                                                              |
+| `new PageObject(page)` in a test                                          | Consume via the fixture (`async ({ appPage }) => …`).                                                                       |
+| Hardcoded URL / token / endpoint                                          | `process.env.*` for URLs & credentials; `enums/{area}/*` for paths & messages.                                              |
+| `.json` static data                                                       | Static data is **`.ts` with `as const`** only.                                                                              |
+| Marking a task done with failing tests                                    | Run the affected tests; green before "done"; red → `debugging`.                                                             |
+| Suppressing a failure (try/catch on `expect`, raise timeout, silent skip) | Fix the **root cause**; `debugging` flow.                                                                                   |
 
 ---
 
