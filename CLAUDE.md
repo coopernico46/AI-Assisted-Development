@@ -142,6 +142,14 @@ When running inside the Dev Container (`DEVCONTAINER=true`):
 
 ---
 
+## Local Windows Environment
+
+When running **locally on Windows** (outside the Dev Container):
+
+- **`playwright-cli` must use the system browser** -- run `npx playwright-cli open --browser=chrome <url>` (or `--browser=msedge`). The Chrome for Testing `chrome.exe` bundled with `@playwright/cli` is **unsigned**, and **Windows Smart App Control** (when enforced) blocks it, so the default `playwright-cli open` fails with `Target page, context or browser has been closed` right after the daemon launches. This is **not** fixed by `npm ci` or by reinstalling browsers; `npm test` is unaffected because `@playwright/test` uses `chromium_headless_shell`.
+- **`scripts/install-playwright-cli-browsers.sh` does not work under Git Bash** -- it passes POSIX `/c/...` paths to Node and prints a misleading "run npm ci first" message. On a Smart App Control machine installing CLI browsers is moot anyway; use `--browser=chrome`.
+- **Explore Before Generate still applies** -- `--browser=chrome` is still `playwright-cli`, so it satisfies the MUST rule. Do not fall back to other browser tools.
+
 ## Key File Locations
 
 > **`{area}` is a placeholder** for the actual app-specific subdirectory (e.g., `front-office`, `back-office`). Check the real folder names with `ls` before using any path.
