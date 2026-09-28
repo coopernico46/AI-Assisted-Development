@@ -29,7 +29,7 @@ Reproduce this table in your working notes (not necessarily in the final report)
 | 13                             | Repeated string values use enums, not inline literals                                                                                           | 🟡               |         |          |
 | 14                             | Existing enum value / `test-data/static` value changes followed the `refactor-values` impact analysis (no stale references)                     | 🔴               |         |          |
 | **Selectors & POM** (UI diffs) |
-| 15                             | Selector priority respected: `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId`                                      | 🟠               |         |          |
+| 15                             | Selector priority respected: `getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText`                                      | 🟠               |         |          |
 | 16                             | No XPath selectors                                                                                                                              | 🔴               |         |          |
 | 17                             | Form/CRUD page objects have success, error, and validation-message selectors                                                                    | 🟠               |         |          |
 | 18                             | JSDoc on action methods only — never on locator getters                                                                                         | 🟡               |         |          |

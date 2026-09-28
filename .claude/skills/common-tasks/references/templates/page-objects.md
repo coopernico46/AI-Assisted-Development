@@ -36,7 +36,7 @@ Create a new page object for [PAGE NAME] with the following elements:
 
 Requirements:
 - File location: pages/{area}/[name].page.ts  (run `ls pages/` first to find real area name)
-- Use semantic locators (getByRole > getByLabel > getByTestId)
+- Use locators in priority order (getByTestId > getByRole > getByLabel > getByPlaceholder > getByText)
 - NO JSDoc on locator getters/methods
 - JSDoc with @param and @returns on action methods only
 - Register in fixtures/pom/page-object-fixture.ts
@@ -50,7 +50,7 @@ Add the following locators to [PAGE_NAME] page object:
 - [Element 1]: [description]
 - [Element 2]: [description]
 
-Use getByRole() as the primary selector strategy.
+Use getByTestId() when the element exposes data-testid; otherwise fall back to getByRole() > getByLabel() > getByPlaceholder() > getByText().
 Add getter methods following the existing pattern.
 ```
 

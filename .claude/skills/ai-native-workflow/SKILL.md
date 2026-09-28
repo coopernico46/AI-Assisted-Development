@@ -100,7 +100,7 @@ For the full conversation contract (audit-then-edit details, refusal triggers), 
 Surface across multiple specialized skills — re-check before declaring done:
 
 - `expect(SchemaName.parse(body)).toBeTruthy();` for API responses.
-- `getByRole > getByLabel > getByPlaceholder > getByText > getByTestId` for selectors.
+- `getByTestId > getByRole > getByLabel > getByPlaceholder > getByText` for selectors.
 - Single tag per test; `@destructive` is heaviest and wins — **shared/global state only** (locale, permissions, roles, access, flags, settings). Isolated own-data tests keep their importance tag. Any state-mutating test needs a revert hook.
 - `z.strictObject()` (never `z.object()`), no `any`, no XPath, no `page.waitForTimeout(...)`.
 - `process.env.*` for URLs/credentials; `enums/{area}/*` for paths/messages.

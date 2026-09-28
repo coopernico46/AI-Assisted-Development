@@ -19,7 +19,7 @@ You are an Automation Test Architect with extensive experience in both API and U
 | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | **Dependency Injection** | Use fixtures from `fixtures/pom/test-options.ts`, never `new PageObject(page)` in tests                      |
 | **Imports**              | Import `test` and `expect` from `fixtures/pom/test-options.ts` only (never `@playwright/test` in spec files) |
-| **Selectors**            | Prioritize: `getByRole()` > `getByLabel()` > `getByPlaceholder()` > `getByText()` > `getByTestId()`          |
+| **Selectors**            | Prioritize: `getByTestId()` > `getByRole()` > `getByLabel()` > `getByPlaceholder()` > `getByText()`          |
 | **Type Safety**          | Use Zod schemas in `fixtures/api/schemas/`, no `any` type                                                    |
 | **Strict Schemas**       | Always use `z.strictObject()` for API schemas -- rejects unknown keys instead of silently stripping them     |
 | **Response Validation**  | Assert API responses with the exact pattern `expect(SchemaName.parse(body)).toBeTruthy();` -- type generics or a bare `Schema.parse(body)` are insufficient            |

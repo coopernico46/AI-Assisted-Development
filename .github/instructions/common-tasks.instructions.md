@@ -51,7 +51,7 @@ After generating code, confirm each box:
 
 - [ ] Imports are from `fixtures/pom/test-options.ts` (never `@playwright/test` in specs)
 - [ ] Paths, credentials, and endpoints come from `process.env.*` and `enums/{area}/*` — nothing hardcoded
-- [ ] Locators use `getByRole` / `getByLabel` / `getByTestId` — no XPath
+- [ ] Locators follow `getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` — no XPath
 - [ ] No `any` types
 - [ ] No hard waits (`waitForTimeout`)
 - [ ] No JSDoc on locator getters/methods (JSDoc only on action methods)
@@ -131,7 +131,7 @@ Create a new page object for [PAGE NAME] with the following elements:
 
 Requirements:
 - File location: pages/{area}/[name].page.ts  (run `ls pages/` first to find real area name)
-- Use semantic locators (getByRole > getByLabel > getByTestId)
+- Use locators in priority order (getByTestId > getByRole > getByLabel > getByPlaceholder > getByText)
 - NO JSDoc on locator getters/methods
 - JSDoc with @param and @returns on action methods only
 - Register in fixtures/pom/page-object-fixture.ts
@@ -145,7 +145,7 @@ Add the following locators to [PAGE_NAME] page object:
 - [Element 1]: [description]
 - [Element 2]: [description]
 
-Use getByRole() as the primary selector strategy.
+Use getByTestId() when the element exposes data-testid; otherwise fall back to getByRole() > getByLabel() > getByPlaceholder() > getByText().
 Add getter methods following the existing pattern.
 ```
 

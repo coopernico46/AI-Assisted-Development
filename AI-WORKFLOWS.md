@@ -114,18 +114,18 @@ Phase 4's proposal **must** carry a 1-10 confidence. The number tells you what t
 **Use when:** a ticket / acceptance criteria describes one feature's behaviours to verify in isolation.
 **Chain:** `test-standards` → `page-objects` · `selectors` · `playwright-cli` · `data-strategy`
 
-| Step | Action                                                                                                                                   | Skill · Phase                          | Gate / Output                  |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------ |
-| 1    | Classify → route to `test-standards` (+ UI chain if new screens are involved).                                                           | `ai-native` · P1–P2                    | —                              |
-| 2    | Split the ticket into discrete behaviours → **one functional test per behaviour**.                                                       | `test-standards` · intro               | —                              |
-| 3    | Missing URL / area / unclear acceptance criteria? **ASK before planning.**                                                               | `ai-native` · P3                       | Confidence < 5 → ASK.          |
-| 4    | New screen/elements? Explore the live app with **`playwright-cli`** (`goto`, `snapshot`). No substitutes.                                | `page-objects` · P2 · `selectors` · P2 | Exploration evidence captured. |
-| 5    | Plan: list scenarios, the tag for each, and data needs. Present.                                                                         | `ai-native` · P4–P5                    | Human approves.                |
-| 6    | Create/extend the page object: semantic locators (`getByRole` > `getByLabel` > …), **including success / error / validation selectors**. | `page-objects` · P3–P5 · `selectors`   | No feedback-less POM.          |
-| 7    | Content values from Faker factories; curated invalid sets from static `.ts`.                                                             | `data-strategy` · P2–P3                | No hardcoded test content.     |
-| 8    | Write the spec: import from `test-options.ts`; `describe` + `beforeEach`; `test.step` (Given/When/Then).                                 | `test-standards` · P2, P4              | —                              |
-| 9    | One tag per test: `@smoke` \| `@sanity` \| `@regression`. Web-first assertions only.                                                     | `test-standards` · P3, P5              | No `waitForTimeout`.           |
-| 10   | Run the affected file; red → `debugging`. Report + ask to commit.                                                                        | `test-standards` · P9                  | Zero failures.                 |
+| Step | Action                                                                                                                                       | Skill · Phase                          | Gate / Output                  |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------ |
+| 1    | Classify → route to `test-standards` (+ UI chain if new screens are involved).                                                               | `ai-native` · P1–P2                    | —                              |
+| 2    | Split the ticket into discrete behaviours → **one functional test per behaviour**.                                                           | `test-standards` · intro               | —                              |
+| 3    | Missing URL / area / unclear acceptance criteria? **ASK before planning.**                                                                   | `ai-native` · P3                       | Confidence < 5 → ASK.          |
+| 4    | New screen/elements? Explore the live app with **`playwright-cli`** (`goto`, `snapshot`). No substitutes.                                    | `page-objects` · P2 · `selectors` · P2 | Exploration evidence captured. |
+| 5    | Plan: list scenarios, the tag for each, and data needs. Present.                                                                             | `ai-native` · P4–P5                    | Human approves.                |
+| 6    | Create/extend the page object: locators by priority (`getByTestId` > `getByRole` > …), **including success / error / validation selectors**. | `page-objects` · P3–P5 · `selectors`   | No feedback-less POM.          |
+| 7    | Content values from Faker factories; curated invalid sets from static `.ts`.                                                                 | `data-strategy` · P2–P3                | No hardcoded test content.     |
+| 8    | Write the spec: import from `test-options.ts`; `describe` + `beforeEach`; `test.step` (Given/When/Then).                                     | `test-standards` · P2, P4              | —                              |
+| 9    | One tag per test: `@smoke` \| `@sanity` \| `@regression`. Web-first assertions only.                                                         | `test-standards` · P3, P5              | No `waitForTimeout`.           |
+| 10   | Run the affected file; red → `debugging`. Report + ask to commit.                                                                            | `test-standards` · P9                  | Zero failures.                 |
 
 ---
 
@@ -185,7 +185,7 @@ Phase 4's proposal **must** carry a 1-10 confidence. The number tells you what t
 | 1    | Verify prerequisites; `ls pages/` to resolve `{area}`.                                                                                                                                                                | `page-objects` · P1                    |
 | 2    | **Explore the live app with `playwright-cli`** (`goto`, `snapshot`). No IDE browser / codegen / substitutes — if the CLI can't run, **stop and tell the human**.                                                      | `page-objects` · P2 · `selectors` · P2 |
 | 3    | Plan the page's test coverage (which elements, which actions, feedback messages).                                                                                                                                     | `page-objects` · P3                    |
-| 4    | Build the class: get-accessor locators by priority (`getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId`); **JSDoc on action methods only**; include success / error / validation selectors. | `page-objects` · P4 · `selectors`      |
+| 4    | Build the class: get-accessor locators by priority (`getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText`); **JSDoc on action methods only**; include success / error / validation selectors. | `page-objects` · P4 · `selectors`      |
 | 5    | Register the page object in `fixtures/pom/page-object-fixture.ts`.                                                                                                                                                    | `page-objects` · P5 · `fixtures`       |
 | 6    | Consume from tests via the fixture (`async ({ appPage }) => …`) — never `new PageObject(page)`.                                                                                                                       | `page-objects` · P6                    |
 

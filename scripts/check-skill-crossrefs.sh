@@ -42,6 +42,7 @@ ALLOWLIST=(
     "research-helper"   # worked example name in skill-creator
     "research-helper-v2" # worked example name in skill-creator
     "front-chromium"    # Playwright project-name example (pr-reviewer skill)
+    "data-testid"       # HTML attribute read by getByTestId (selectors / page-objects skills)
 )
 
 errors=0

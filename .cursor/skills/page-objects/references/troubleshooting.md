@@ -27,7 +27,7 @@
 ## I copy-pasted a locator from DOM inspector and it uses XPath or a brittle CSS chain
 
 **Cause:** Wrong locator strategy.
-**Fix:** Replace with `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId` per the `selectors` skill's priority order. If nothing semantic works, coordinate with engineering to add a `data-testid`.
+**Fix:** Replace with `getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` per the `selectors` skill's priority order. If the element has no `data-testid` and nothing semantic works, coordinate with engineering to add one.
 
 ## My page object file is 600+ lines and hard to maintain
 

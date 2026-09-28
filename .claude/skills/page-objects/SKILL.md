@@ -17,6 +17,7 @@ author: Ivan Davidov
     - **Allowed** on component fields (e.g. `readonly nav: NavigationComponent`) — these are not locators.
 - **Three locator sections** when the page has forms or CRUD: interactive-element locators, feedback/validation-message locators, action methods. Feedback locators are not optional — see the `selectors` skill.
 - **Feedback/message strings come from `enums/{area}/*`** (e.g. `Messages.LOGIN_ERROR`). Never hardcoded strings inside `getByText(...)`.
+- **Locator priority order (owned by the `selectors` skill):** `getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText`. A `data-testid` on the element always wins; semantic locators are the fallback when no test ID exists.
 - **NEVER** `page.waitForTimeout(...)` inside a page object. Use web-first assertions (`await expect(locator).toBeVisible()`) or `page.waitForResponse(...)`.
 - **Exploration with `playwright-cli` is mandatory** before writing any locators (see the `selectors` skill's Exploration-First Workflow). No guessing from wireframes, docs, or screenshots. If the app is unavailable, stop and say so — never ship placeholder locators.
 - **Register every new page object** as a fixture in `fixtures/pom/page-object-fixture.ts`. Tests consume page objects through the fixture, never via `new PageObject(page)`.
@@ -42,11 +43,11 @@ export class ExamplePage {
     // ==================== Locators ====================
 
     get emailInput(): Locator {
-        return this.page.getByLabel('Email');
+        return this.page.getByTestId('email-input'); // data-testid present -> Tier 1
     }
 
     get submitButton(): Locator {
-        return this.page.getByRole('button', { name: 'Submit' });
+        return this.page.getByRole('button', { name: 'Submit' }); // no data-testid -> next tier
     }
 
     // ==================== Feedback Locators ====================
@@ -200,7 +201,7 @@ Never create a page object from assumptions, wireframes, or documentation alone.
 
 1. **Open and authenticate** — use **only** `playwright-cli` in the terminal (not IDE browser MCP, not Cursor browser tools, not any substitute). Orchestrator rule: **No Substitute UI Exploration**. If the page doesn't load or auth fails, stop and notify the human.
 2. **Explore like a user** — navigate through the feature, trigger CRUD operations, observe forms, buttons, feedback messages, validation errors, and dynamic content.
-3. Record every observed element's role, accessible name, label, and (if applicable) test ID.
+3. Record every observed element's `data-testid` first (check with `playwright-cli eval "el => el.getAttribute('data-testid')" <ref>` — the accessibility snapshot does not show it), then its role, accessible name, and label.
 
 Read the full workflow in the `selectors` skill (`.claude/skills/selectors/SKILL.md` → "Exploration-First Workflow") and `playwright-cli` skill for the specific commands.
 
@@ -224,6 +225,7 @@ Follow the Page Object Pattern above. Specifically:
 - Import `expect, Locator, Page` from `@playwright/test`.
 - Constructor: `private readonly page: Page` — plus component instantiation if composing.
 - Three locator sections (Interactive / Feedback / Actions), each separated by a visual header comment. Feedback locators reference `enums/{area}/*` values, never hardcoded strings.
+- Locators follow the `selectors` priority order: `getByTestId` when a `data-testid` exists, otherwise `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText`.
 - Every action method: explicit return type, `@param` / `@returns` JSDoc, waits for API responses or state changes (web-first assertions or `waitForResponse`), no `waitForTimeout`.
 - Verification method naming: `xxxAndVerify()` — may use `expect(...)` internally.
 - Reusable fragments → component under `pages/components/` and composed via a `readonly field: ComponentClass` in the page object (see Component composition above).

@@ -7,11 +7,11 @@ import { NavigationComponent } from '../components/navigation.component';
  * Contains locators and methods for interacting with the application.
  *
  * This example demonstrates the recommended locator priority:
- * 1. getByRole() - Accessibility-based (most recommended)
- * 2. getByLabel() - Form labels
- * 3. getByPlaceholder() - Placeholder text
- * 4. getByText() - Text content
- * 5. getByTestId() - Test IDs (fallback when semantic locators aren't possible)
+ * 1. getByTestId() - Test IDs (always first when the element exposes data-testid)
+ * 2. getByRole() - Accessibility-based (first fallback when no test ID exists)
+ * 3. getByLabel() - Form labels
+ * 4. getByPlaceholder() - Placeholder text
+ * 5. getByText() - Text content
  *
  * This also demonstrates the component composition pattern where reusable
  * UI components (like NavigationComponent) are composed into page objects.

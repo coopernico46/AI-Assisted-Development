@@ -1,6 +1,6 @@
 ---
 name: selectors
-description: Selector strategy, exploration-first workflow, locator priority order (getByRole then getByLabel then getByPlaceholder then getByText then getByTestId), and feedback/validation-message selector rules for Playwright page objects. Use when creating page objects, writing or updating locators, generating UI tests, or deciding which selector strategy to use for a given element. Enforces mandatory live-app exploration via playwright-cli before any selector generation. For the page-object class structure, JSDoc rules, and fixture registration see the page-objects skill; for the exploration tool itself see the playwright-cli skill; for UI message strings used inside getByText see the enums skill.
+description: Selector strategy, exploration-first workflow, locator priority order (getByTestId then getByRole then getByLabel then getByPlaceholder then getByText), and feedback/validation-message selector rules for Playwright page objects. Use when creating page objects, writing or updating locators, generating UI tests, or deciding which selector strategy to use for a given element. Enforces mandatory live-app exploration via playwright-cli before any selector generation. For the page-object class structure, JSDoc rules, and fixture registration see the page-objects skill; for the exploration tool itself see the playwright-cli skill; for UI message strings used inside getByText see the enums skill.
 author: Ivan Davidov
 ---
 
@@ -8,7 +8,7 @@ author: Ivan Davidov
 
 ## Critical
 
-- **Selector priority order is mandatory:** `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` > `getByTestId`. Move to the next option only when the previous one is not feasible.
+- **Selector priority order is mandatory:** `getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText`. Move to the next option only when the previous one is not feasible. A `data-testid` on the element always wins; semantic locators are the fallback when no test ID exists.
 - **NEVER** use XPath (`page.locator('//...')` or `'xpath=...'`).
 - **NEVER** use CSS class or ID selectors as the primary strategy (`page.locator('.btn-primary')`, `page.locator('#submit')`). Acceptable only as an absolute last resort after ruling out every semantic option.
 - **Exploration with `playwright-cli` is mandatory** before writing any selectors. No guessing from wireframes, docs, or screenshots. Read the `playwright-cli` skill for the commands.
@@ -44,6 +44,7 @@ Navigate through the feature under test the way a real user would. At each page/
 - **Navigation** — links, menus, breadcrumbs, tabs.
 - **Feedback elements** — success banners, error messages, validation errors on fields, toast notifications, loading spinners.
 - **Dynamic content** — content that appears after actions (modals, expanded sections, new rows in tables).
+- **Test IDs** — `data-testid` attributes are **not** shown in the accessibility snapshot. For each candidate element, check with `playwright-cli eval "el => el.getAttribute('data-testid')" <ref>` before deciding on a locator tier.
 
 ```bash
 playwright-cli snapshot
@@ -72,18 +73,22 @@ Now that the real UI is understood, generate selectors using the Priority Order 
 
 ## Priority Order (Mandatory)
 
-Use semantic locators in this order. Move to the next option ONLY when the previous one is not feasible:
+Use locators in this order. Move to the next option ONLY when the previous one is not feasible:
 
-1. **`getByRole()`** — Accessibility-based. Always the first choice for buttons, links, headings, textboxes, checkboxes, etc.
-2. **`getByLabel()`** — For form inputs that have associated `<label>` elements.
-3. **`getByPlaceholder()`** — For inputs with placeholder text when no label exists.
-4. **`getByText()`** — For static text content, messages, or non-interactive elements.
-5. **`getByTestId()`** — Fallback when none of the above produce a reliable locator.
+1. **`getByTestId()`** — Always the first choice when the element exposes a `data-testid`. Stable across copy, layout, and accessibility refactors.
+2. **`getByRole()`** — Accessibility-based. First fallback for buttons, links, headings, textboxes, checkboxes, etc. when no test ID exists.
+3. **`getByLabel()`** — For form inputs that have associated `<label>` elements.
+4. **`getByPlaceholder()`** — For inputs with placeholder text when no label exists.
+5. **`getByText()`** — For static text content, messages, or non-interactive elements.
 
 ## Correct Examples
 
 ```typescript
-// 1. getByRole -- buttons, links, headings, navigation
+// 1. getByTestId -- any element that exposes data-testid (always wins)
+page.getByTestId('user-avatar');
+page.getByTestId('login-submit');
+
+// 2. getByRole -- buttons, links, headings, navigation (no test ID available)
 page.getByRole('button', { name: 'Submit' });
 page.getByRole('link', { name: 'Dashboard' });
 page.getByRole('heading', { name: 'Welcome' });
@@ -91,19 +96,16 @@ page.getByRole('navigation');
 page.getByRole('textbox', { name: 'Email' });
 page.getByRole('checkbox', { name: 'Remember me' });
 
-// 2. getByLabel -- form fields with labels
+// 3. getByLabel -- form fields with labels
 page.getByLabel('Email');
 page.getByLabel('Password');
 
-// 3. getByPlaceholder -- inputs without labels
+// 4. getByPlaceholder -- inputs without labels
 page.getByPlaceholder('Search...');
 
-// 4. getByText -- static content
+// 5. getByText -- static content
 page.getByText('Login successful');
 page.getByText(Messages.LOGIN_ERROR); // prefer enums for repeated strings
-
-// 5. getByTestId -- last resort
-page.getByTestId('user-avatar');
 ```
 
 ## Forbidden (NEVER Use)
@@ -126,8 +128,9 @@ page.getByTestId('user-avatar');
 
 ## Choosing Between Similar Locators
 
-- If the element has a **role** (button, link, heading, etc.), always prefer `getByRole()`.
-- If the element is a **form input with a label**, prefer `getByLabel()` over `getByRole('textbox')`.
+- If the element exposes a **`data-testid`**, always use `getByTestId()` — do not fall through to role/label even when they are also available.
+- If there is no test ID and the element has a **role** (button, link, heading, etc.), prefer `getByRole()`.
+- If there is no test ID and the element is a **form input with a label**, prefer `getByLabel()` over `getByRole('textbox')`.
 - If identifying by **exact text** risks matching multiple elements, add `{ exact: true }` or use a more specific role.
 - If a parent container contains several similar elements, **scope the search**: `page.getByRole('form').getByRole('button', { name: 'Save' })`.
 - Use **enums** for repeated string values (error messages, labels) rather than hardcoding strings — see the `enums` skill.
@@ -148,6 +151,8 @@ Every page object that covers a form or CRUD operation **must** include selector
 | Empty state          | When a list/table has no data           | `getByText('No items found')` or `getByRole('heading')` in empty state |
 
 > The `Messages.*` values shown above are **illustrative placeholders**. Use the real enum members from your scaffold's `enums/{area}/*.ts` (e.g. `Messages.LOGIN_SUCCESS`, `Messages.LOGIN_ERROR`, `Messages.REQUIRED_FIELD`). Capture the exact rendered text with `playwright-cli` first and encode it via the `enums` skill.
+
+The strategies in the table apply when the feedback element has no test ID. If it exposes a `data-testid` (a toast or alert container, for example), `getByTestId(...)` takes precedence per the Priority Order, and the `Messages.*` text is then asserted with `toHaveText(...)` / `toContainText(...)`.
 
 For a full worked code example (page object class with form + feedback locators + action method, plus how the test asserts on it), see `references/feedback-selectors-example.md`.
 

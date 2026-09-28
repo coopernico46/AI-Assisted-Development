@@ -53,7 +53,7 @@ After generating code, confirm each box:
 
 - [ ] Imports are from `fixtures/pom/test-options.ts` (never `@playwright/test` in specs)
 - [ ] Paths, credentials, and endpoints come from `process.env.*` and `enums/{area}/*` — nothing hardcoded
-- [ ] Locators use `getByRole` / `getByLabel` / `getByTestId` — no XPath
+- [ ] Locators follow `getByTestId` > `getByRole` > `getByLabel` > `getByPlaceholder` > `getByText` — no XPath
 - [ ] No `any` types
 - [ ] No hard waits (`waitForTimeout`)
 - [ ] No JSDoc on locator getters/methods (JSDoc only on action methods)
