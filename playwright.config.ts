@@ -1,6 +1,12 @@
-import { defineConfig, devices } from '@playwright/test';
+import {
+    defineConfig,
+    devices,
+    type ReporterDescription,
+} from '@playwright/test';
 import dotenv from 'dotenv';
 import { StorageStatePaths } from './enums/app/app';
+import { ReportPaths } from './enums/util/reporting';
+import type { QaDashboardOptions } from './reporters/qa-dashboard/qa-dashboard-reporter';
 
 /**
  * Load environment variables from .env file.
@@ -13,6 +19,19 @@ const environment = process.env.ENVIRONMENT ?? 'dev';
 const environmentPath = `./env/.env.${environment}`;
 
 dotenv.config({ path: environmentPath });
+
+/**
+ * Custom QA dashboard (reporters/qa-dashboard), written after every run.
+ * Open it with `npm run report:dashboard`.
+ */
+const qaDashboardReporter: ReporterDescription = [
+    './reporters/qa-dashboard/qa-dashboard-reporter.ts',
+    {
+        outputFolder: ReportPaths.QA_DASHBOARD,
+        title: 'QA Dashboard · Carrefour',
+        environment,
+    } satisfies QaDashboardOptions,
+];
 
 /**
  * Playwright Test Configuration
@@ -35,8 +54,8 @@ export default defineConfig({
 
     /* Reporter configuration */
     reporter: process.env.CI
-        ? [['blob'], ['html', { open: 'never' }]]
-        : [['html', { open: 'on-failure' }]],
+        ? [['blob'], ['html', { open: 'never' }], qaDashboardReporter]
+        : [['html', { open: 'on-failure' }], qaDashboardReporter],
 
     /* Shared settings for all projects */
     use: {

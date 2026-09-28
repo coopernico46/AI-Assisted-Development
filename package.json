@@ -18,6 +18,7 @@
         "test:e2e": "npx playwright test --grep @e2e --project=chromium",
         "test:destructive": "npx playwright test --grep @destructive --project=chromium --workers=1",
         "report": "npx playwright show-report",
+        "report:dashboard": "node scripts/serve-qa-dashboard.mjs",
         "lint": "npx eslint .",
         "lint:fix": "npx eslint . --fix",
         "format": "npx prettier --write .",
