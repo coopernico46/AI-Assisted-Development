@@ -21,6 +21,7 @@ A production-ready Playwright test automation scaffold built with TypeScript. De
 - [Configuration](#configuration)
 - [Environment Variables](#environment-variables)
 - [Running Tests](#running-tests)
+- [QA Dashboard Report](#qa-dashboard-report)
 - [Tag Reference](#tag-reference)
 - [Writing Tests](#writing-tests)
 - [Page Object Model](#page-object-model)
@@ -49,7 +50,7 @@ A production-ready Playwright test automation scaffold built with TypeScript. De
 - **Authentication Handling** -- Pre-configured storage state for authenticated tests
 - **Code Quality** -- ESLint + Prettier + Husky pre-commit hooks
 - **Parallel Execution** -- Fast test runs with configurable workers
-- **Comprehensive Reporting** -- HTML reports with traces, screenshots, and videos
+- **Comprehensive Reporting** -- HTML reports with traces, screenshots, and videos, plus a self-contained [QA dashboard](#qa-dashboard-report) (filters, evidences, light/dark theme, bundled Trace Viewer) generated after every run
 - **AI-Assisted Development** -- Modular orchestrator rules for Claude Code, Cursor, and GitHub Copilot with glob-scoped auto-loading. Each tool's rule tree (`.claude/`, `.cursor/`, `.github/instructions/`) is self-contained and stands alone.
 - **Confidence-Gated Workflow** -- The `ai-native-workflow` skill is the sole entry-point router for non-trivial work. Every plan must include `Confidence: <1-10>`, `Rationale`, and `Unknowns`; below confidence 5 the agent is required to stop and ask the user for the missing primary input rather than emit a plan built on guesses.
 - **Constitution Enforcement Hook** -- `.claude/scripts/enforce_constitution.py` is wired as a Claude Code `PreToolUse` hook in `.claude/settings.json`. It blocks any `Write`/`Edit`/`MultiEdit` that would introduce a mechanically-detectable WON'T violation (`waitForTimeout`, `z.object` in schemas, XPath, `@playwright/test` imports in specs, `.json` static data, the `@functional` tag, tags on `test.describe()`) before the file is ever written -- a hard backstop beneath the prompt-level rules.
@@ -362,6 +363,7 @@ root/
 │   ├── install-playwright-cli-browsers.sh
 │   ├── link-cli.sh            # Links playwright/playwright-cli into ~/.local/bin
 │   ├── playwright-cli.sh      # Wrapper that isolates PLAYWRIGHT_BROWSERS_PATH for @playwright/cli
+│   ├── serve-qa-dashboard.mjs # Local HTTP server for the QA dashboard (npm run report:dashboard)
 │   └── setup.sh               # Local development setup (non-Docker alternative)
 │
 ├── VERSION                    # Single source of truth for the product version
@@ -438,6 +440,7 @@ root/
 │   ├── app/                   # App-specific enums
 │   │   └── app.ts
 │   └── util/                  # Shared enums (roles, etc.)
+│       ├── reporting.ts       # Report output folders (QA dashboard, HTML report)
 │       └── roles.ts
 │
 ├── env/                       # Environment configuration
@@ -472,6 +475,9 @@ root/
 │   └── components/            # Reusable UI components
 │       └── navigation.component.ts
 │
+├── reporters/                 # Custom Playwright reporters
+│   └── qa-dashboard/          # QA dashboard reporter (see QA Dashboard Report)
+│
 ├── test-data/                 # Test data files
 │   ├── static/                # Immutable data (boundary/invalid cases)
 │   │   └── app/
@@ -505,15 +511,15 @@ root/
 
 The `playwright.config.ts` file contains all test runner settings:
 
-| Setting            | Local                   | CI                |
-| ------------------ | ----------------------- | ----------------- |
-| Parallel execution | Enabled                 | Enabled           |
-| Workers            | Auto                    | 1                 |
-| Retries            | 0                       | 2                 |
-| Reporter           | HTML (opens on failure) | Blob + HTML       |
-| Traces             | On first retry          | On first retry    |
-| Screenshots        | On failure              | On failure        |
-| Videos             | Retain on failure       | Retain on failure |
+| Setting            | Local                                  | CI                         |
+| ------------------ | -------------------------------------- | -------------------------- |
+| Parallel execution | Enabled                                | Enabled                    |
+| Workers            | Auto                                   | 1                          |
+| Retries            | 0                                      | 2                          |
+| Reporter           | HTML (opens on failure) + QA Dashboard | Blob + HTML + QA Dashboard |
+| Traces             | On first retry                         | On first retry             |
+| Screenshots        | On failure                             | On failure                 |
+| Videos             | Retain on failure                      | Retain on failure          |
 
 ### Browser Projects
 
@@ -633,8 +639,149 @@ npm run test:ci
 ### View Reports
 
 ```bash
+# Native Playwright HTML report
 npm run report
+
+# QA dashboard (see QA Dashboard Report)
+npm run report:dashboard
 ```
+
+---
+
+## QA Dashboard Report
+
+A custom reporter (`reporters/qa-dashboard/`) writes a self-contained **QA dashboard** after every test run, alongside the native Playwright HTML report. It is registered in `playwright.config.ts` for local and CI runs, so it is generated automatically -- there is no extra build step.
+
+### Quick Start
+
+```bash
+# 1. Run tests with any command (npm test, npm run test:smoke, npx playwright test <file>, ...)
+npm test
+
+# 2. Serve the dashboard
+npm run report:dashboard
+```
+
+Open **http://127.0.0.1:9325** in Chrome or Edge (you are redirected to `qa-dashboard-report/index.html`). Stop the server with `Ctrl+C`.
+
+Every run ends with this line in the console:
+
+```text
+  QA Dashboard generado en qa-dashboard-report\index.html (npm run report:dashboard para abrirlo)
+```
+
+If port 9325 is busy, pick another one with `QA_DASHBOARD_PORT`:
+
+```bash
+# bash / Git Bash
+QA_DASHBOARD_PORT=9400 npm run report:dashboard
+
+# PowerShell
+$env:QA_DASHBOARD_PORT=9400; npm run report:dashboard
+```
+
+### What the Dashboard Shows
+
+The dashboard UI is in Spanish.
+
+| Area                                                      | Content                                                                                                                                                                                                                                             |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Header**                                                | Run date, total duration, environment (`ENVIRONMENT`), Playwright version, workers and overall run status. Buttons: **Reporte Playwright** (native HTML report), **Imprimir / PDF** and the **light/dark theme** toggle                             |
+| **KPIs**                                                  | Total, passed, failed, skipped, flaky and success rate (passed + flaky over executed tests)                                                                                                                                                         |
+| **Summary bars**                                          | Distribution of results by status                                                                                                                                                                                                                   |
+| **Filters**                                               | Status, tag, project, spec file and free text, plus **Colapsar / Expandir todo**                                                                                                                                                                    |
+| **Groups**                                                | One collapsible block per spec file (path relative to `tests/`) with test count, passed/failed ratio and duration                                                                                                                                   |
+| **Test card**                                             | Status, duration, `file:line`, project, `describe` path, tag, retry number, annotations and the first line of the error                                                                                                                             |
+| **Evidences** (click _Ver evidencias y contexto técnico_) | Full error with code snippet, steps tree with durations, `error-context`, stdout/stderr, text/JSON attachments inline, screenshot (click to enlarge), video player, links to every attachment and the **Abrir trace** / **Descargar trace** buttons |
+
+Status mapping: **flaky** means the test failed and then passed on a retry; **skipped** includes tests that did not run (e.g. because the `setup` project failed). When a test is retried, only the evidences of the last attempt are kept.
+
+The theme follows the operating system on first load; the toggle choice is remembered in the browser. Printing always uses the light theme.
+
+### Evidences Captured
+
+The dashboard shows whatever Playwright records, as set in the `use` block of `playwright.config.ts`:
+
+| Evidence           | Setting                         | When it appears                                         |
+| ------------------ | ------------------------------- | ------------------------------------------------------- |
+| Screenshot         | `screenshot: 'only-on-failure'` | Failed tests                                            |
+| Video              | `video: 'retain-on-failure'`    | Failed tests                                            |
+| Trace              | `trace: 'on-first-retry'`       | Failed tests that were retried (CI runs with 2 retries) |
+| Custom attachments | `testInfo.attach(...)`          | Always; text and JSON are shown inline                  |
+
+### Opening Traces
+
+**Abrir trace** opens the Playwright Trace Viewer bundled inside the dashboard (`qa-dashboard-report/trace/`) in a new tab. It works offline and nothing is uploaded anywhere.
+
+- **Local runs have no traces by default**: `retries` is `0` locally, so `on-first-retry` never records one. Screenshots and videos still appear. When you need a trace locally, run:
+
+    ```bash
+    npx playwright test --trace retain-on-failure
+    ```
+
+- The viewer needs the dashboard to be **served over HTTP** (`npm run report:dashboard`). If `index.html` is opened directly from disk (double click / `file://`), the button shows a dialog with both alternatives: serve the dashboard, or copy the ready-made `npx playwright show-trace "<path to trace.zip>"` command.
+- The Trace Viewer relies on a Service Worker. Browsers embedded in IDEs or desktop apps often do not support them and show a blank page -- use Chrome or Edge.
+
+### Output Folder
+
+```text
+qa-dashboard-report/        # git-ignored; wiped and regenerated on every run
+├── index.html              # the dashboard (CSS and JS inlined)
+├── data/<test-id>/         # copies of screenshots, videos, traces and attachments
+└── trace/                  # bundled Trace Viewer (only when the run has traces)
+```
+
+Evidences are **copied** into the dashboard folder, so it keeps working after `test-results/` is cleaned and can be shared by zipping `qa-dashboard-report/`: the recipient can open `index.html` directly (everything except the Trace Viewer works from disk) or serve it with any static HTTP server.
+
+> **Each run overwrites the folder.** Copy or zip `qa-dashboard-report/` before the next run if you want to keep a run's results.
+
+### CI
+
+The dashboard is generated in CI as well (`qa-dashboard-report/` in the job workspace). Publish it as a build artifact, for example with GitHub Actions:
+
+```yaml
+- name: Upload QA dashboard
+  if: ${{ !cancelled() }}
+  uses: actions/upload-artifact@v4
+  with:
+      name: qa-dashboard
+      path: qa-dashboard-report/
+```
+
+### Configuration
+
+The reporter is declared once in `playwright.config.ts` and added to both reporter lists (local and CI):
+
+```ts
+const qaDashboardReporter: ReporterDescription = [
+    './reporters/qa-dashboard/qa-dashboard-reporter.ts',
+    {
+        outputFolder: ReportPaths.QA_DASHBOARD,
+        title: 'QA Dashboard · Carrefour',
+        environment,
+    } satisfies QaDashboardOptions,
+];
+```
+
+| Option         | Default                                                                         | Description                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `outputFolder` | `qa-dashboard-report` (`ReportPaths.QA_DASHBOARD` in `enums/util/reporting.ts`) | Output folder, relative to the project root. It is wiped on every run, so it cannot be the project root or one of its parents |
+| `title`        | `QA Dashboard`                                                                  | Header and browser tab title                                                                                                  |
+| `environment`  | `-`                                                                             | Environment name shown in the header (the `ENVIRONMENT` value used to load `env/.env.*`)                                      |
+
+If you change `outputFolder`, update `servedFolders` and `entryPoint` in `scripts/serve-qa-dashboard.mjs` and the `.gitignore` / `.prettierignore` entries too.
+
+### Files
+
+| File                                              | Responsibility                                                                                                                |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `reporters/qa-dashboard/qa-dashboard-reporter.ts` | Reporter: collects results, copies evidences, bundles the Trace Viewer and writes `index.html`                                |
+| `reporters/qa-dashboard/template.ts`              | HTML rendering (header, KPIs, groups, cards)                                                                                  |
+| `reporters/qa-dashboard/styles.ts`                | CSS with light and dark theme tokens                                                                                          |
+| `reporters/qa-dashboard/client-script.ts`         | Browser behaviour: filters, theme toggle, screenshot lightbox, trace button                                                   |
+| `reporters/qa-dashboard/types.ts`                 | Dashboard data model                                                                                                          |
+| `scripts/serve-qa-dashboard.mjs`                  | Local HTTP server bound to `127.0.0.1`; serves only `qa-dashboard-report/` and `playwright-report/`, never `env/` or `.auth/` |
+| `enums/util/reporting.ts`                         | Report output folder names                                                                                                    |
 
 ---
 
@@ -1538,6 +1685,23 @@ Common causes:
 - **Missing environment variables** -- Ensure CI has all variables from `env/.env.example`
 - **Timeouts** -- CI machines may be slower; adjust timeouts in `playwright.config.ts` if needed
 - **Browser differences** -- CI typically runs headless; test locally with `npm run test:ci` first to reproduce
+
+### QA dashboard: `No existe qa-dashboard-report/index.html`
+
+`npm run report:dashboard` only serves an existing dashboard. Run the tests first (`npm test` or any `npx playwright test ...` command); the dashboard is written at the end of the run.
+
+### QA dashboard: the "Abrir trace" button does not appear
+
+The run recorded no traces. Locally `trace: 'on-first-retry'` never fires because `retries` is `0`. Re-run with `npx playwright test --trace retain-on-failure`. See [Opening Traces](#opening-traces).
+
+### QA dashboard: the Trace Viewer opens blank or shows a help dialog
+
+- A help dialog means `index.html` was opened from disk (`file://`). Serve it with `npm run report:dashboard`, or use the `npx playwright show-trace` command shown in the dialog.
+- A blank page means the browser does not support Service Workers (common in browsers embedded in IDEs or desktop apps). Open the URL in Chrome or Edge.
+
+### QA dashboard: `EADDRINUSE` when running `npm run report:dashboard`
+
+Port 9325 is already in use, usually by a previous dashboard server that is still running. Stop it with `Ctrl+C`, or choose another port with `QA_DASHBOARD_PORT` (see [Quick Start](#quick-start)).
 
 ## License
 
