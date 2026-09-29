@@ -11,6 +11,7 @@ test-downloads/
 
 # Claude Code
 .claude/projects/
+.claude/settings.local.json
 .claude/skills/ai-native-workflow-workspace/
 
 # Environment files (keep .env.example as template)
