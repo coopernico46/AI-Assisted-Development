@@ -55,8 +55,8 @@ RULES = [
         "no-xpath",
         lambda p: UI_OR_TEST_FILE.search(p),
         lambda c: re.search(r"""xpath=|locator\(\s*[`'\"]//""", c),
-        "XPath selectors are forbidden. Use getByRole > getByLabel > getByPlaceholder > "
-        "getByText > getByTestId (Constitution WON'T: No XPath).",
+        "XPath selectors are forbidden. Use getByTestId > getByRole > getByLabel > "
+        "getByPlaceholder > getByText (Constitution WON'T: No XPath).",
     ),
     (
         "no-json-static-data",
